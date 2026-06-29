@@ -1,0 +1,543 @@
+Perfect. For CTS preparation, keep **each topic in one structured format**.
+
+# 1. Time Complexity
+
+### Definition
+
+Time Complexity measures how the execution time grows as input size increases.
+
+### Common Complexities
+
+| Complexity | Name         |
+| ---------- | ------------ |
+| O(1)       | Constant     |
+| O(log n)   | Logarithmic  |
+| O(n)       | Linear       |
+| O(n log n) | Linearithmic |
+| O(n²)      | Quadratic    |
+| O(2ⁿ)      | Exponential  |
+| O(n!)      | Factorial    |
+
+### Example O(1)
+
+```java
+int x = arr[0];
+```
+
+### Example O(n)
+
+```java
+for(int i=0;i<n;i++)
+{
+    System.out.println(i);
+}
+```
+
+### Example O(n²)
+
+```java
+for(int i=0;i<n;i++)
+{
+    for(int j=0;j<n;j++)
+    {
+        System.out.println(i+" "+j);
+    }
+}
+```
+
+---
+
+# 2. Space Complexity
+
+### Definition
+
+Space Complexity measures the amount of memory used by an algorithm.
+
+### Example O(1)
+
+```java
+int a = 10;
+int b = 20;
+```
+
+### Example O(n)
+
+```java
+int[] arr = new int[n];
+```
+
+---
+
+# 3. Arrays
+
+### Definition
+
+Collection of elements stored in contiguous memory.
+
+### Code
+
+```java
+int[] arr = {10,20,30,40};
+
+for(int num : arr)
+{
+    System.out.print(num+" ");
+}
+```
+
+### Output
+
+```text
+10 20 30 40
+```
+
+### Time Complexity
+
+| Operation     | TC   |
+| ------------- | ---- |
+| Access        | O(1) |
+| Search        | O(n) |
+| Insert End    | O(1) |
+| Insert Middle | O(n) |
+| Delete        | O(n) |
+
+---
+
+## Reverse Array
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+
+        int[] arr = {1,2,3,4,5};
+
+        int left = 0;
+        int right = arr.length-1;
+
+        while(left < right)
+        {
+            int temp = arr[left];
+            arr[left] = arr[right];
+            arr[right] = temp;
+
+            left++;
+            right--;
+        }
+
+        for(int x : arr)
+            System.out.print(x+" ");
+    }
+}
+```
+
+Output
+
+```text
+5 4 3 2 1
+```
+
+TC: O(n)
+
+SC: O(1)
+
+---
+
+# 4. Strings
+
+### Definition
+
+Sequence of characters.
+
+### Code
+
+```java
+String s = "Hello";
+
+System.out.println(s.length());
+System.out.println(s.charAt(0));
+```
+
+Output
+
+```text
+5
+H
+```
+
+---
+
+## Reverse String
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+
+        String s = "hello";
+
+        String rev = "";
+
+        for(int i=s.length()-1;i>=0;i--)
+        {
+            rev += s.charAt(i);
+        }
+
+        System.out.println(rev);
+    }
+}
+```
+
+Output
+
+```text
+olleh
+```
+
+TC: O(n)
+
+---
+
+## Palindrome String
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+
+        String s = "madam";
+
+        int i=0;
+        int j=s.length()-1;
+
+        boolean flag=true;
+
+        while(i<j)
+        {
+            if(s.charAt(i)!=s.charAt(j))
+            {
+                flag=false;
+                break;
+            }
+
+            i++;
+            j--;
+        }
+
+        System.out.println(flag);
+    }
+}
+```
+
+Output
+
+```text
+true
+```
+
+---
+
+# 5. Recursion
+
+### Definition
+
+Function calling itself.
+
+---
+
+## Factorial
+
+```java
+static int factorial(int n)
+{
+    if(n==0)
+        return 1;
+
+    return n*factorial(n-1);
+}
+```
+
+Output
+
+```text
+factorial(5)=120
+```
+
+TC: O(n)
+
+SC: O(n)
+
+---
+
+## Fibonacci
+
+```java
+static int fib(int n)
+{
+    if(n<=1)
+        return n;
+
+    return fib(n-1)+fib(n-2);
+}
+```
+
+Output
+
+```text
+fib(6)=8
+```
+
+TC: O(2ⁿ)
+
+SC: O(n)
+
+---
+
+## Sum Of Digits
+
+```java
+static int sum(int n)
+{
+    if(n==0)
+        return 0;
+
+    return n%10 + sum(n/10);
+}
+```
+
+Output
+
+```text
+sum(1234)=10
+```
+
+TC: O(log n)
+
+---
+
+## Power(x,n)
+
+```java
+static int power(int x,int n)
+{
+    if(n==0)
+        return 1;
+
+    return x*power(x,n-1);
+}
+```
+
+Output
+
+```text
+2^5 = 32
+```
+
+TC: O(n)
+
+---
+
+## Subsets
+
+```java
+import java.util.*;
+
+public class Main {
+
+    static void subset(int[] arr,
+                       int index,
+                       List<Integer> curr)
+    {
+        if(index==arr.length)
+        {
+            System.out.println(curr);
+            return;
+        }
+
+        curr.add(arr[index]);
+
+        subset(arr,index+1,curr);
+
+        curr.remove(curr.size()-1);
+
+        subset(arr,index+1,curr);
+    }
+
+    public static void main(String[] args)
+    {
+        int[] arr={1,2};
+
+        subset(arr,0,new ArrayList<>());
+    }
+}
+```
+
+Output
+
+```text
+[1, 2]
+[1]
+[2]
+[]
+```
+
+TC: O(2ⁿ)
+
+---
+
+## Permutations
+
+```java
+static void permute(String str,
+                    String ans)
+{
+    if(str.length()==0)
+    {
+        System.out.println(ans);
+        return;
+    }
+
+    for(int i=0;i<str.length();i++)
+    {
+        char ch=str.charAt(i);
+
+        String left=str.substring(0,i);
+        String right=str.substring(i+1);
+
+        permute(left+right,
+                ans+ch);
+    }
+}
+```
+
+Output
+
+```text
+ABC
+ACB
+BAC
+BCA
+CAB
+CBA
+```
+
+TC: O(n!)
+
+---
+
+# 6. Searching
+
+## Linear Search
+
+```java
+int target = 30;
+
+for(int i=0;i<arr.length;i++)
+{
+    if(arr[i]==target)
+    {
+        System.out.println(i);
+        break;
+    }
+}
+```
+
+TC: O(n)
+
+---
+
+## Binary Search
+
+```java
+int low=0;
+int high=arr.length-1;
+
+while(low<=high)
+{
+    int mid=(low+high)/2;
+
+    if(arr[mid]==target)
+    {
+        System.out.println(mid);
+        break;
+    }
+    else if(arr[mid]<target)
+        low=mid+1;
+    else
+        high=mid-1;
+}
+```
+
+TC: O(log n)
+
+---
+
+# 7. Sorting
+
+## Bubble Sort
+
+```java
+for(int i=0;i<n-1;i++)
+{
+    for(int j=0;j<n-i-1;j++)
+    {
+        if(arr[j]>arr[j+1])
+        {
+            int temp=arr[j];
+            arr[j]=arr[j+1];
+            arr[j+1]=temp;
+        }
+    }
+}
+```
+
+TC: O(n²)
+
+---
+
+## Selection Sort
+
+```java
+for(int i=0;i<n-1;i++)
+{
+    int min=i;
+
+    for(int j=i+1;j<n;j++)
+    {
+        if(arr[j]<arr[min])
+            min=j;
+    }
+
+    int temp=arr[i];
+    arr[i]=arr[min];
+    arr[min]=temp;
+}
+```
+
+TC: O(n²)
+
+---
+
+## Insertion Sort
+
+```java
+for(int i=1;i<n;i++)
+{
+    int key=arr[i];
+    int j=i-1;
+
+    while(j>=0 && arr[j]>key)
+    {
+        arr[j+1]=arr[j];
+        j--;
+    }
+
+    arr[j+1]=key;
+}
+```
+
+TC: O(n²)
+
+---
+
+

@@ -1,0 +1,560 @@
+Advanced SQL + PL/SQL Complete Notes (Interview + Placement Preparation)
+1. What is SQL?
+
+SQL (Structured Query Language) is used to communicate with databases.
+
+Functions:
+
+Store data
+Retrieve data
+Update data
+Delete data
+Manage database objects
+
+Example:
+
+SELECT * FROM Employee;
+2. SQL Command Types
+Type	Purpose
+DDL	Create, Alter, Drop
+DML	Insert, Update, Delete
+DQL	Select
+DCL	Grant, Revoke
+TCL	Commit, Rollback
+DDL Commands
+CREATE
+CREATE TABLE Employee(
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    salary DECIMAL(10,2)
+);
+ALTER
+
+Add column:
+
+ALTER TABLE Employee
+ADD department VARCHAR(30);
+DROP
+DROP TABLE Employee;
+TRUNCATE
+
+Deletes all rows.
+
+TRUNCATE TABLE Employee;
+
+Faster than DELETE.
+
+DML Commands
+INSERT
+INSERT INTO Employee
+VALUES(1,'Raghul',50000);
+UPDATE
+UPDATE Employee
+SET salary=60000
+WHERE id=1;
+DELETE
+DELETE FROM Employee
+WHERE id=1;
+DQL
+SELECT
+SELECT * FROM Employee;
+
+Specific columns:
+
+SELECT name,salary
+FROM Employee;
+WHERE Clause
+SELECT *
+FROM Employee
+WHERE salary > 50000;
+Operators
+Comparison
+=
+>
+<
+>=
+<=
+<>
+
+Example:
+
+SELECT *
+FROM Employee
+WHERE salary >= 50000;
+AND
+SELECT *
+FROM Employee
+WHERE salary>50000
+AND department='IT';
+OR
+SELECT *
+FROM Employee
+WHERE department='IT'
+OR department='HR';
+NOT
+SELECT *
+FROM Employee
+WHERE NOT department='IT';
+LIKE Operator
+Starts with
+SELECT *
+FROM Employee
+WHERE name LIKE 'R%';
+Ends with
+SELECT *
+FROM Employee
+WHERE name LIKE '%l';
+Contains
+SELECT *
+FROM Employee
+WHERE name LIKE '%gh%';
+BETWEEN
+SELECT *
+FROM Employee
+WHERE salary BETWEEN 30000 AND 70000;
+IN Operator
+SELECT *
+FROM Employee
+WHERE department IN ('IT','HR');
+ORDER BY
+
+Ascending:
+
+SELECT *
+FROM Employee
+ORDER BY salary ASC;
+
+Descending:
+
+SELECT *
+FROM Employee
+ORDER BY salary DESC;
+Aggregate Functions
+COUNT
+SELECT COUNT(*)
+FROM Employee;
+SUM
+SELECT SUM(salary)
+FROM Employee;
+AVG
+SELECT AVG(salary)
+FROM Employee;
+MAX
+SELECT MAX(salary)
+FROM Employee;
+MIN
+SELECT MIN(salary)
+FROM Employee;
+GROUP BY
+
+Department-wise salary:
+
+SELECT department,
+       SUM(salary)
+FROM Employee
+GROUP BY department;
+HAVING
+SELECT department,
+       AVG(salary)
+FROM Employee
+GROUP BY department
+HAVING AVG(salary)>50000;
+JOINS
+
+Assume:
+
+Employee
+
+id	name	dept_id
+
+Department
+
+dept_id	dept_name
+INNER JOIN
+
+Matching records only.
+
+SELECT e.name,
+       d.dept_name
+FROM Employee e
+INNER JOIN Department d
+ON e.dept_id=d.dept_id;
+LEFT JOIN
+
+All left records.
+
+SELECT *
+FROM Employee e
+LEFT JOIN Department d
+ON e.dept_id=d.dept_id;
+RIGHT JOIN
+
+All right records.
+
+SELECT *
+FROM Employee e
+RIGHT JOIN Department d
+ON e.dept_id=d.dept_id;
+FULL OUTER JOIN
+SELECT *
+FROM Employee e
+FULL OUTER JOIN Department d
+ON e.dept_id=d.dept_id;
+SELF JOIN
+SELECT e1.name Employee,
+       e2.name Manager
+FROM Employee e1
+JOIN Employee e2
+ON e1.manager_id=e2.id;
+UNION
+
+Removes duplicates.
+
+SELECT name FROM Employee
+UNION
+SELECT name FROM Manager;
+UNION ALL
+
+Keeps duplicates.
+
+SELECT name FROM Employee
+UNION ALL
+SELECT name FROM Manager;
+SUBQUERY
+Single Row
+SELECT *
+FROM Employee
+WHERE salary >
+(
+SELECT AVG(salary)
+FROM Employee
+);
+Correlated Subquery
+SELECT *
+FROM Employee e
+WHERE salary >
+(
+SELECT AVG(salary)
+FROM Employee
+WHERE dept_id=e.dept_id
+);
+EXISTS
+SELECT *
+FROM Department d
+WHERE EXISTS
+(
+SELECT *
+FROM Employee e
+WHERE e.dept_id=d.dept_id
+);
+Views
+
+Virtual table.
+
+CREATE VIEW Employee_View AS
+SELECT id,name,salary
+FROM Employee;
+
+Use:
+
+SELECT * FROM Employee_View;
+Index
+
+Improves searching.
+
+CREATE INDEX idx_name
+ON Employee(name);
+Constraints
+PRIMARY KEY
+id INT PRIMARY KEY
+FOREIGN KEY
+dept_id INT,
+FOREIGN KEY(dept_id)
+REFERENCES Department(dept_id)
+UNIQUE
+email VARCHAR(50) UNIQUE
+NOT NULL
+name VARCHAR(50) NOT NULL
+CHECK
+salary INT CHECK(salary>0)
+Normalization
+1NF
+
+No repeating groups.
+
+❌
+
+Student
+1 | Java,C++
+
+✅
+
+1 | Java
+1 | C++
+2NF
+
+No partial dependency.
+
+3NF
+
+No transitive dependency.
+
+BCNF
+
+Every determinant should be a candidate key.
+
+Interview:
+
+BCNF is stronger than 3NF.
+SQL Interview Queries
+Second Highest Salary
+SELECT MAX(salary)
+FROM Employee
+WHERE salary <
+(
+SELECT MAX(salary)
+FROM Employee
+);
+Nth Highest Salary
+SELECT salary
+FROM Employee
+ORDER BY salary DESC
+LIMIT 1 OFFSET 2;
+
+(3rd Highest)
+
+Duplicate Records
+SELECT name,
+COUNT(*)
+FROM Employee
+GROUP BY name
+HAVING COUNT(*)>1;
+Delete Duplicates
+DELETE FROM Employee
+WHERE id NOT IN
+(
+SELECT MIN(id)
+FROM Employee
+GROUP BY name
+);
+Stored Procedure
+
+Reusable SQL block.
+
+CREATE PROCEDURE GetEmployees
+AS
+BEGIN
+   SELECT * FROM Employee;
+END;
+
+Execute:
+
+EXEC GetEmployees;
+Trigger
+
+Automatically executes.
+
+CREATE TRIGGER trg_insert
+ON Employee
+AFTER INSERT
+AS
+BEGIN
+   PRINT 'Record Inserted';
+END;
+Cursor
+
+Processes rows one by one.
+
+DECLARE emp_cursor CURSOR
+FOR
+SELECT name
+FROM Employee;
+Transactions
+COMMIT
+
+Permanent save.
+
+COMMIT;
+ROLLBACK
+
+Undo changes.
+
+ROLLBACK;
+SAVEPOINT
+SAVEPOINT s1;
+
+Rollback:
+
+ROLLBACK TO s1;
+PL/SQL
+
+PL/SQL = Procedural Language + SQL
+
+Oracle Extension of SQL.
+
+Supports:
+
+Variables
+Loops
+Conditions
+Functions
+Procedures
+Basic PL/SQL Block
+DECLARE
+   num NUMBER:=10;
+
+BEGIN
+   DBMS_OUTPUT.PUT_LINE(num);
+END;
+/
+
+Output:
+
+10
+Variables
+DECLARE
+   name VARCHAR2(20);
+BEGIN
+   name:='Raghul';
+   DBMS_OUTPUT.PUT_LINE(name);
+END;
+/
+IF Statement
+DECLARE
+   num NUMBER:=50;
+
+BEGIN
+   IF num>40 THEN
+      DBMS_OUTPUT.PUT_LINE('Pass');
+   END IF;
+END;
+/
+IF ELSE
+DECLARE
+   num NUMBER:=35;
+
+BEGIN
+   IF num>=40 THEN
+      DBMS_OUTPUT.PUT_LINE('Pass');
+   ELSE
+      DBMS_OUTPUT.PUT_LINE('Fail');
+   END IF;
+END;
+/
+FOR LOOP
+BEGIN
+   FOR i IN 1..5 LOOP
+      DBMS_OUTPUT.PUT_LINE(i);
+   END LOOP;
+END;
+/
+
+Output
+
+1
+2
+3
+4
+5
+WHILE LOOP
+DECLARE
+   i NUMBER:=1;
+
+BEGIN
+   WHILE i<=5 LOOP
+      DBMS_OUTPUT.PUT_LINE(i);
+      i:=i+1;
+   END LOOP;
+END;
+/
+Procedure
+CREATE OR REPLACE PROCEDURE greet
+AS
+BEGIN
+   DBMS_OUTPUT.PUT_LINE('Hello');
+END;
+/
+
+Execute:
+
+EXEC greet;
+Procedure With Parameter
+CREATE OR REPLACE PROCEDURE greet(
+name VARCHAR2)
+AS
+BEGIN
+   DBMS_OUTPUT.PUT_LINE('Hello '||name);
+END;
+/
+
+Execute:
+
+EXEC greet('Raghul');
+Function
+CREATE OR REPLACE FUNCTION square(
+n NUMBER)
+RETURN NUMBER
+AS
+BEGIN
+   RETURN n*n;
+END;
+/
+
+Use:
+
+SELECT square(5)
+FROM dual;
+
+Output:
+
+25
+Exception Handling
+DECLARE
+   a NUMBER:=10;
+   b NUMBER:=0;
+   c NUMBER;
+
+BEGIN
+   c:=a/b;
+
+EXCEPTION
+   WHEN ZERO_DIVIDE THEN
+      DBMS_OUTPUT.PUT_LINE('Cannot Divide By Zero');
+END;
+/
+Explicit Cursor
+DECLARE
+
+CURSOR c IS
+SELECT name
+FROM Employee;
+
+v_name Employee.name%TYPE;
+
+BEGIN
+
+OPEN c;
+
+LOOP
+
+FETCH c INTO v_name;
+
+EXIT WHEN c%NOTFOUND;
+
+DBMS_OUTPUT.PUT_LINE(v_name);
+
+END LOOP;
+
+CLOSE c;
+
+END;
+/
+Trigger Example
+CREATE OR REPLACE TRIGGER emp_trigger
+AFTER INSERT
+ON Employee
+
+BEGIN
+   DBMS_OUTPUT.PUT_LINE('Employee Added');
+END;
+/

@@ -1,0 +1,369 @@
+1. Singleton Pattern
+
+Purpose: Only one object can be created.
+
+class Singleton {
+    private static Singleton instance;
+
+    private Singleton() {}
+
+    public static Singleton getInstance() {
+        if(instance == null)
+            instance = new Singleton();
+        return instance;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Singleton s1 = Singleton.getInstance();
+        Singleton s2 = Singleton.getInstance();
+
+        System.out.println(s1 == s2);
+    }
+}
+
+Output:
+
+true
+
+2. Factory Pattern
+
+Purpose: Create objects without exposing creation logic.
+
+interface Shape {
+    void draw();
+}
+
+class Circle implements Shape {
+    public void draw() {
+        System.out.println("Circle");
+    }
+}
+
+class Rectangle implements Shape {
+    public void draw() {
+        System.out.println("Rectangle");
+    }
+}
+
+class ShapeFactory {
+    public static Shape getShape(String type) {
+        if(type.equals("circle"))
+            return new Circle();
+        return new Rectangle();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Shape shape = ShapeFactory.getShape("circle");
+        shape.draw();
+    }
+}
+
+3. Builder Pattern
+
+Purpose: Construct complex objects step by step.
+
+class Student {
+    private String name;
+    private int age;
+
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String toString() {
+        return name + " " + age;
+    }
+
+    static class Builder {
+        private String name;
+        private int age;
+
+        Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        Builder setAge(int age) {
+            this.age = age;
+            return this;
+        }
+
+        Student build() {
+            return new Student(name, age);
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Student s = new Student.Builder()
+                        .setName("Raghul")
+                        .setAge(20)
+                        .build();
+
+        System.out.println(s);
+    }
+}
+
+4. Prototype Pattern
+
+Purpose: Create object by cloning.
+
+class Student implements Cloneable {
+    String name;
+
+    Student(String name) {
+        this.name = name;
+    }
+
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Student s1 = new Student("Raghul");
+        Student s2 = (Student)s1.clone();
+
+        System.out.println(s2.name);
+    }
+}
+
+5. Adapter Pattern
+
+Purpose: Make incompatible interfaces work together.
+
+interface USB {
+    void connectUSB();
+}
+
+class PenDrive implements USB {
+    public void connectUSB() {
+        System.out.println("USB Connected");
+    }
+}
+
+class Adapter {
+    private USB usb;
+
+    Adapter(USB usb) {
+        this.usb = usb;
+    }
+
+    void connect() {
+        usb.connectUSB();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Adapter adapter = new Adapter(new PenDrive());
+        adapter.connect();
+    }
+}
+
+6. Decorator Pattern
+
+Purpose: Add behavior dynamically.
+
+interface Coffee {
+    String getDescription();
+}
+
+class BasicCoffee implements Coffee {
+    public String getDescription() {
+        return "Coffee";
+    }
+}
+
+class MilkDecorator implements Coffee {
+    private Coffee coffee;
+
+    MilkDecorator(Coffee coffee) {
+        this.coffee = coffee;
+    }
+
+    public String getDescription() {
+        return coffee.getDescription() + " + Milk";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Coffee coffee =
+                new MilkDecorator(new BasicCoffee());
+
+        System.out.println(coffee.getDescription());
+    }
+}
+
+7. Observer Pattern
+
+Purpose: Notify multiple objects automatically.
+
+import java.util.*;
+
+interface Observer {
+    void update(String msg);
+}
+
+class User implements Observer {
+    String name;
+
+    User(String name) {
+        this.name = name;
+    }
+
+    public void update(String msg) {
+        System.out.println(name + " received: " + msg);
+    }
+}
+
+class Channel {
+    List<Observer> users = new ArrayList<>();
+
+    void subscribe(Observer o) {
+        users.add(o);
+    }
+
+    void notifyUsers(String msg) {
+        for(Observer o : users)
+            o.update(msg);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Channel c = new Channel();
+
+        c.subscribe(new User("Raghul"));
+        c.subscribe(new User("Kumar"));
+
+        c.notifyUsers("New Video Uploaded");
+    }
+}
+
+8. Strategy Pattern
+
+Purpose: Change algorithm at runtime.
+
+interface PaymentStrategy {
+    void pay();
+}
+
+class UPIPayment implements PaymentStrategy {
+    public void pay() {
+        System.out.println("Paid using UPI");
+    }
+}
+
+class CardPayment implements PaymentStrategy {
+    public void pay() {
+        System.out.println("Paid using Card");
+    }
+}
+
+class PaymentContext {
+    private PaymentStrategy strategy;
+
+    PaymentContext(PaymentStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    void execute() {
+        strategy.pay();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        PaymentContext p =
+            new PaymentContext(new UPIPayment());
+
+        p.execute();
+    }
+}
+
+9. Command Pattern
+
+Purpose: Encapsulate request as an object.
+
+interface Command {
+    void execute();
+}
+
+class Light {
+    void on() {
+        System.out.println("Light ON");
+    }
+}
+
+class LightCommand implements Command {
+    Light light;
+
+    LightCommand(Light light) {
+        this.light = light;
+    }
+
+    public void execute() {
+        light.on();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Light light = new Light();
+
+        Command command =
+                new LightCommand(light);
+
+        command.execute();
+    }
+}
+
+10. MVC Pattern
+
+Purpose: Separate Model, View and Controller.
+
+class Student {
+    String name = "Raghul";
+}
+
+class StudentView {
+    void display(String name) {
+        System.out.println(name);
+    }
+}
+
+class StudentController {
+    Student model;
+    StudentView view;
+
+    StudentController(Student model,
+                      StudentView view) {
+        this.model = model;
+        this.view = view;
+    }
+
+    void updateView() {
+        view.display(model.name);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Student model = new Student();
+        StudentView view = new StudentView();
+
+        StudentController controller =
+            new StudentController(model, view);
+
+        controller.updateView();
+    }
+}

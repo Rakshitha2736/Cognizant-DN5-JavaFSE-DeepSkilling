@@ -1,0 +1,775 @@
+# NUnit and Moq Complete Notes (CTS / Cognizant Preparation)
+
+NUnit and Moq are used for **Unit Testing in .NET (C#)**.
+
+---
+
+# What is Unit Testing?
+
+Testing a small piece of code (method/function) independently.
+
+Example:
+
+```csharp
+public int Add(int a, int b)
+{
+    return a + b;
+}
+```
+
+Test:
+
+```csharp
+Assert.AreEqual(5, Add(2,3));
+```
+
+---
+
+# Why Unit Testing?
+
+Benefits:
+
+* Finds bugs early
+* Improves code quality
+* Easy maintenance
+* Supports TDD
+* Safe refactoring
+
+---
+
+# What is NUnit?
+
+NUnit is a testing framework for .NET.
+
+Similar to:
+
+* JUnit → Java
+* PyTest → Python
+* NUnit → C#
+
+Official Framework:
+[NUnit](https://nunit.org/?utm_source=chatgpt.com)
+
+---
+
+# NUnit Architecture
+
+```text
+Application Code
+       ↓
+NUnit Test Case
+       ↓
+Assertions
+       ↓
+Pass / Fail
+```
+
+---
+
+# Installing NUnit
+
+NuGet Packages:
+
+```powershell
+Install-Package NUnit
+Install-Package NUnit3TestAdapter
+Install-Package Microsoft.NET.Test.Sdk
+```
+
+---
+
+# Basic NUnit Example
+
+Class:
+
+```csharp
+public class Calculator
+{
+    public int Add(int a, int b)
+    {
+        return a + b;
+    }
+}
+```
+
+Test:
+
+```csharp
+using NUnit.Framework;
+
+[TestFixture]
+public class CalculatorTests
+{
+    [Test]
+    public void Add_ShouldReturnCorrectSum()
+    {
+        Calculator c = new Calculator();
+
+        int result = c.Add(2,3);
+
+        Assert.AreEqual(5,result);
+    }
+}
+```
+
+---
+
+# Important NUnit Attributes
+
+## [TestFixture]
+
+Represents a test class.
+
+```csharp
+[TestFixture]
+public class EmployeeTest
+{
+}
+```
+
+---
+
+## [Test]
+
+Represents a test method.
+
+```csharp
+[Test]
+public void TestMethod()
+{
+}
+```
+
+---
+
+## [SetUp]
+
+Runs before every test.
+
+```csharp
+[SetUp]
+public void Setup()
+{
+    Console.WriteLine("Before Test");
+}
+```
+
+---
+
+## [TearDown]
+
+Runs after every test.
+
+```csharp
+[TearDown]
+public void Cleanup()
+{
+    Console.WriteLine("After Test");
+}
+```
+
+---
+
+## Example
+
+```csharp
+[TestFixture]
+public class Demo
+{
+    [SetUp]
+    public void Setup()
+    {
+        Console.WriteLine("Setup");
+    }
+
+    [Test]
+    public void Test1()
+    {
+        Console.WriteLine("Test1");
+    }
+
+    [Test]
+    public void Test2()
+    {
+        Console.WriteLine("Test2");
+    }
+
+    [TearDown]
+    public void Cleanup()
+    {
+        Console.WriteLine("Cleanup");
+    }
+}
+```
+
+Execution:
+
+```text
+Setup
+Test1
+Cleanup
+
+Setup
+Test2
+Cleanup
+```
+
+---
+
+# Assertions
+
+Assertions verify expected results.
+
+---
+
+## AreEqual
+
+```csharp
+Assert.AreEqual(10,result);
+```
+
+---
+
+## AreNotEqual
+
+```csharp
+Assert.AreNotEqual(10,result);
+```
+
+---
+
+## IsTrue
+
+```csharp
+Assert.IsTrue(age > 18);
+```
+
+---
+
+## IsFalse
+
+```csharp
+Assert.IsFalse(age > 18);
+```
+
+---
+
+## IsNull
+
+```csharp
+Assert.IsNull(employee);
+```
+
+---
+
+## IsNotNull
+
+```csharp
+Assert.IsNotNull(employee);
+```
+
+---
+
+## Contains
+
+```csharp
+Assert.Contains("Java", skills);
+```
+
+---
+
+## Throws
+
+```csharp
+Assert.Throws<DivideByZeroException>
+(
+    () => calculator.Divide(10,0)
+);
+```
+
+---
+
+# Parameterized Tests
+
+```csharp
+[TestCase(2,3,5)]
+[TestCase(4,6,10)]
+[TestCase(5,5,10)]
+public void Add_Test(int a,int b,int expected)
+{
+    Calculator c = new Calculator();
+
+    Assert.AreEqual(expected,c.Add(a,b));
+}
+```
+
+---
+
+# Ignore Test
+
+```csharp
+[Test]
+[Ignore("Under Development")]
+public void TestMethod()
+{
+}
+```
+
+---
+
+# Category
+
+```csharp
+[Test]
+[Category("Smoke")]
+public void LoginTest()
+{
+}
+```
+
+---
+
+# What is Mocking?
+
+Mocking means creating fake objects for testing.
+
+Real Dependency:
+
+```text
+Service
+   ↓
+Database
+```
+
+Database not available?
+
+Use Mock Object.
+
+```text
+Service
+   ↓
+Mock Database
+```
+
+---
+
+# What is Moq?
+
+Moq is a mocking framework for .NET.
+
+Official Site:
+[Moq GitHub Repository](https://github.com/devlooped/moq?utm_source=chatgpt.com)
+
+Used to:
+
+* Mock Interfaces
+* Mock Services
+* Mock Repositories
+* Avoid Real Database Calls
+
+---
+
+# Install Moq
+
+```powershell
+Install-Package Moq
+```
+
+---
+
+# Real Time Example
+
+Without Moq:
+
+```csharp
+EmployeeService
+       ↓
+EmployeeRepository
+       ↓
+SQL Database
+```
+
+Testing becomes difficult.
+
+---
+
+With Moq:
+
+```text
+EmployeeService
+       ↓
+Mock Repository
+```
+
+Fast and independent testing.
+
+---
+
+# Example
+
+## Repository Interface
+
+```csharp
+public interface IEmployeeRepository
+{
+    string GetEmployeeName(int id);
+}
+```
+
+---
+
+## Service Class
+
+```csharp
+public class EmployeeService
+{
+    private readonly IEmployeeRepository repository;
+
+    public EmployeeService(
+        IEmployeeRepository repository)
+    {
+        this.repository = repository;
+    }
+
+    public string GetName(int id)
+    {
+        return repository.GetEmployeeName(id);
+    }
+}
+```
+
+---
+
+# Test Using Moq
+
+```csharp
+using NUnit.Framework;
+using Moq;
+
+[TestFixture]
+public class EmployeeServiceTests
+{
+    [Test]
+    public void GetName_ShouldReturnEmployeeName()
+    {
+        var mockRepo =
+            new Mock<IEmployeeRepository>();
+
+        mockRepo
+            .Setup(x => x.GetEmployeeName(1))
+            .Returns("Raghul");
+
+        EmployeeService service =
+            new EmployeeService(mockRepo.Object);
+
+        string result =
+            service.GetName(1);
+
+        Assert.AreEqual("Raghul", result);
+    }
+}
+```
+
+---
+
+# Setup()
+
+Defines mock behavior.
+
+```csharp
+mock.Setup(x => x.GetEmployeeName(1))
+    .Returns("Raghul");
+```
+
+Meaning:
+
+```text
+If GetEmployeeName(1) is called
+Return "Raghul"
+```
+
+---
+
+# Verify()
+
+Checks whether method was called.
+
+```csharp
+mockRepo.Verify(
+x => x.GetEmployeeName(1),
+Times.Once
+);
+```
+
+---
+
+# Verify Example
+
+```csharp
+[Test]
+public void VerifyMethodCalled()
+{
+    var mockRepo =
+        new Mock<IEmployeeRepository>();
+
+    mockRepo.Setup(x =>
+        x.GetEmployeeName(1))
+        .Returns("Raghul");
+
+    EmployeeService service =
+        new EmployeeService(mockRepo.Object);
+
+    service.GetName(1);
+
+    mockRepo.Verify(
+        x => x.GetEmployeeName(1),
+        Times.Once
+    );
+}
+```
+
+---
+
+# Times Methods
+
+## Once
+
+```csharp
+Times.Once()
+```
+
+---
+
+## Never
+
+```csharp
+Times.Never()
+```
+
+---
+
+## Exactly
+
+```csharp
+Times.Exactly(3)
+```
+
+---
+
+## AtLeastOnce
+
+```csharp
+Times.AtLeastOnce()
+```
+
+---
+
+# Returns()
+
+```csharp
+mock.Setup(x=>x.GetSalary())
+    .Returns(50000);
+```
+
+---
+
+# Throws()
+
+```csharp
+mock.Setup(x=>x.GetData())
+    .Throws(new Exception());
+```
+
+---
+
+# Callback()
+
+```csharp
+mock.Setup(x=>x.Save())
+    .Callback(() =>
+    {
+        Console.WriteLine("Saved");
+    });
+```
+
+---
+
+# Mocking List Data
+
+```csharp
+var employees =
+new List<string>
+{
+    "Raghul",
+    "John",
+    "David"
+};
+
+mock.Setup(x=>x.GetAll())
+    .Returns(employees);
+```
+
+---
+
+# Mocking Async Method
+
+Interface:
+
+```csharp
+Task<string> GetNameAsync();
+```
+
+Test:
+
+```csharp
+mock.Setup(x => x.GetNameAsync())
+    .ReturnsAsync("Raghul");
+```
+
+---
+
+# Full Real-Time Example
+
+## Repository
+
+```csharp
+public interface IUserRepository
+{
+    string GetUser(int id);
+}
+```
+
+---
+
+## Service
+
+```csharp
+public class UserService
+{
+    private readonly IUserRepository repo;
+
+    public UserService(IUserRepository repo)
+    {
+        this.repo = repo;
+    }
+
+    public string GetUserName(int id)
+    {
+        return repo.GetUser(id);
+    }
+}
+```
+
+---
+
+## NUnit + Moq Test
+
+```csharp
+using NUnit.Framework;
+using Moq;
+
+[TestFixture]
+public class UserServiceTest
+{
+    [Test]
+    public void GetUserName_Test()
+    {
+        var mock =
+            new Mock<IUserRepository>();
+
+        mock.Setup(x =>
+            x.GetUser(1))
+            .Returns("Raghul");
+
+        UserService service =
+            new UserService(mock.Object);
+
+        string result =
+            service.GetUserName(1);
+
+        Assert.AreEqual(
+            "Raghul",
+            result
+        );
+
+        mock.Verify(
+            x => x.GetUser(1),
+            Times.Once
+        );
+    }
+}
+```
+
+---
+
+# NUnit vs Moq
+
+| NUnit             | Moq                      |
+| ----------------- | ------------------------ |
+| Testing Framework | Mocking Framework        |
+| Executes Tests    | Creates Fake Objects     |
+| Uses Assertions   | Uses Setup & Verify      |
+| Similar to JUnit  | Similar to Mockito(Java) |
+
+---
+
+# Interview Questions
+
+### What is NUnit?
+
+A unit testing framework for .NET applications.
+
+---
+
+### What is Moq?
+
+A mocking framework used to create fake dependencies for testing.
+
+---
+
+### Why use Moq?
+
+To test business logic without connecting to databases, APIs, or external systems.
+
+---
+
+### Difference between Stub and Mock?
+
+| Stub          | Mock                 |
+| ------------- | -------------------- |
+| Returns data  | Verifies interaction |
+| No validation | Validation supported |
+
+---
+
+### What is Setup()?
+
+Defines expected behavior of a mock object.
+
+```csharp
+mock.Setup(x=>x.GetName())
+    .Returns("Raghul");
+```
+
+---
+
+### What is Verify()?
+
+Checks whether a mocked method was called.
+
+```csharp
+mock.Verify(x=>x.GetName(),Times.Once);
+```
+
+---
+
+### What is Dependency Injection?
+
+Injecting dependencies through constructor, setter, or interface instead of creating them inside a class.
+
+```csharp
+public UserService(IUserRepository repo)
+{
+    this.repo = repo;
+}
+```
