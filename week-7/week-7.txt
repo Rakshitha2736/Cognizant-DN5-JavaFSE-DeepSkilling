@@ -1,0 +1,256 @@
+// ==========================================
+// 1. DEPENDENCIES (pom.xml summary)
+// ==========================================
+/*
+ Required Starters in Spring Boot 3 (Java 17+):
+ - spring-boot-starter-web
+ - spring-boot-starter-validation
+ - spring-boot-starter-hateoas
+ - spring-boot-starter-actuator
+ - spring-boot-starter-security
+ - jackson-dataformat-xml (For XML Content Negotiation)
+ - springdoc-openapi-starter-webmvc-ui (For Swagger/OpenAPI)
+ - jjwt-api, jjwt-impl, jjwt-jackson (For JWT Token Handling)
+ - spring-boot-starter-test (JUnit 5, Mockito, MockMvc)
+*/
+
+// ==========================================
+// 2. DTO CLASS WITH VALIDATION
+// ==========================================
+package com.example.demo.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public class EmployeeDTO {
+
+    private Long id;
+
+    @NotBlank(message = "Name cannot be blank")
+    @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
+    private String name;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Must be a valid email address")
+    private String email;
+
+    @NotBlank(message = "Department is required")
+    private String department;
+
+    public EmployeeDTO() {}
+
+    public EmployeeDTO(Long id, String name, String email, String department) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.department = department;
+    }
+
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
+}
+
+// ==========================================
+// 3. GLOBAL EXCEPTION HANDLING
+// ==========================================
+package com.example.demo.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, Object> body = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error -> 
+            errors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("errors", errors);
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+}
+
+// Custom Runtime Exception
+class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+}
+
+// ==========================================
+// 4. REST CONTROLLER (CRUD, HATEOAS, Content Negotiation)
+// ==========================================
+package com.example.demo.controller;
+
+import com.example.demo.dto.EmployeeDTO;
+import com.example.demo.exception.ResourceNotFoundException;
+import jakarta.validation.Valid;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/employees")
+public class EmployeeController {
+
+    private final List<EmployeeDTO> employeeList = new ArrayList<>();
+
+    public EmployeeController() {
+        employeeList.add(new EmployeeDTO(1L, "Alice Smith", "alice@example.com", "Engineering"));
+        employeeList.add(new EmployeeDTO(2L, "Bob Jones", "bob@example.com", "HR"));
+    }
+
+    // Supports JSON and XML via Content Negotiation
+    @GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
+        return ResponseEntity.ok(employeeList);
+    }
+
+    // HATEOAS Implementation
+    @GetMapping(value = "/{id}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    public EntityModel<EmployeeDTO> getEmployeeById(@PathVariable Long id) {
+        EmployeeDTO dto = employeeList.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+
+        // Adding Hypermedia Links (HATEOAS)
+        EntityModel<EmployeeDTO> resource = EntityModel.of(dto);
+        WebMvcLinkBuilder selfLink = WebMvcLinkBuilder.linkTo(
+                WebMvcLinkBuilder.methodOn(this.getClass()).getEmployeeById(id));
+        WebMvcLinkBuilder allUsersLink = WebMvcLinkBuilder.linkTo(
+                WebMvcLinkBuilder.methodOn(this.getClass()).getAllEmployees());
+
+        resource.add(selfLink.withSelfRel());
+        resource.add(allUsersLink.withRel("all-employees"));
+
+        return resource;
+    }
+
+    @PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    public ResponseEntity<EmployeeDTO> createEmployee(@Valid @RequestBody EmployeeDTO dto) {
+        dto.setId((long) (employeeList.size() + 1));
+        employeeList.add(dto);
+        return new ResponseEntity<>(dto, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+        boolean removed = employeeList.removeIf(e -> e.getId().equals(id));
+        if (!removed) {
+            throw new ResourceNotFoundException("Employee not found with id: " + id);
+        }
+        return ResponseEntity.noContent().build();
+    }
+}
+
+// ==========================================
+// 5. SECURITY & JWT CONFIGURATION (Spring Security 6 / Spring Boot 3)
+// ==========================================
+package com.example.demo.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable()) // Disabled for stateless REST APIs
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
+                .anyRequest().authenticated()
+            );
+        
+        // Custom JWT Filter would be inserted here via:
+        // http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}
+
+// ==========================================
+// 6. UNIT TESTING WITH JUNIT 5 & MOCKMVC
+// ==========================================
+package com.example.demo;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class EmployeeControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void testGetEmployeeByIdSuccess() throws Exception {
+        mockMvc.perform(get("/api/v1/employees/1")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Alice Smith"))
+                .andExpect(jsonPath("$.department").value("Engineering"));
+    }
+
+    @Test
+    void testGetEmployeeNotFound() throws Exception {
+        mockMvc.perform(get("/api/v1/employees/99")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+}
